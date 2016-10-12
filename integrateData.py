@@ -269,18 +269,24 @@ for line in proposed.readlines():
 
         p_sequence = ""
 
-        if isReadingSequence:
+    if isReadingSequence:
             p_sequence += line
 
-        if line[0] == ">":
-            if "-" in line:
-                isReadingSequence = False
-                continue
-            else:
-                isReadingSequence = True
-                line = line.replace(">", "")
-                line = line.rstrip()
-                antibodyName = line
+    if line[0] == ">":
+        if "-" in line:
+            isReadingSequence = False
+            continue
+        else:
+            isReadingSequence = True
+            line = line.replace(">", "")
+            line = line.rstrip()
+            antibodyName = line
+
+print("main program 4 result:")
+print("integratedSeqInfo=", integratedSeqInfo)
+print("warningList=", warningList)
+
+proposed.close()
 
 
 
