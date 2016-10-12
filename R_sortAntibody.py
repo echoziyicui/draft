@@ -19,15 +19,15 @@
 ################################################################################
 # step 1: Processing data in RL.faa
 ################################################################################
-# constant about recommended.faa
+# constant about RL.faa
 recommended = open(r'inndata\RL.faa', "r")
 dict_recommended_appearance = {}
-R_antibodyWithASetOfChain   = []
-R_heavyChainAntibody        = []
-R_lightChainAntibody        = []
-R_twoVersionAntibody        = []
-R_AntibodyWithFusion        = []
-R_specialAntibody           = {}
+R_antibodyWithASetOfChain = []
+R_heavyChainAntibody = []
+R_lightChainAntibody = []
+R_twoVersionAntibody = []
+R_AntibodyWithFusion = []
+R_specialAntibody = {}
 
 ################################################################################
 ### main program
@@ -46,14 +46,14 @@ R_specialAntibody           = {}
 
 for line in recommended.readlines():
     if line[0] == ">":
-        line   = line.replace(">", "")  # delete the ">"
-        line   = line.rstrip()
+        line = line.replace(">", "")  # delete the ">"
+        line = line.rstrip()
 
         if "|" in line:
             field = line.split("|")
             antibodyName = field[0]
             chainType = field[-1]
-            dict_recommended_appearance.setdefault(antibodyName,[])
+            dict_recommended_appearance.setdefault(antibodyName, [])
 
             if chainType == "Heavy":
                 dict_recommended_appearance[antibodyName].append('H')
@@ -79,7 +79,7 @@ for antibodyName in dict_recommended_appearance:
         R_heavyChainAntibody.append(antibodyName)
     elif dict_recommended_appearance[antibodyName] == ['L']:
         R_lightChainAntibody.append(antibodyName)
-    elif 'H2' or 'L2' in dict_recommended_appearance[antibodyName]:
+    elif 'H2' in dict_recommended_appearance[antibodyName] or 'L2' in dict_recommended_appearance[antibodyName]:
         R_twoVersionAntibody.append(antibodyName)
     elif 'F' in dict_recommended_appearance[antibodyName]:
         R_AntibodyWithFusion.append(antibodyName)
@@ -94,35 +94,25 @@ print("R_AntibodyWithFusion=", R_AntibodyWithFusion)
 print("R_specialAntibody =", R_specialAntibody)
 print('\n')
 ################################################################################
-
-
-################################################################################
 #
 # add the sequences of normal antibody with a set of heavy chain and light to a
 # new dictionary.
 #
 ################################################################################
-# integratedSeqInfo = {}
-#recommended = open(r'C:\Users\echo\Desktop\recommended.faa', "r")
+integratedSeqInfo = {}
+recommended = open(r'inndata\RL.faa', "r")
 
-#for line in proposed.readlines():
- #   if line[0] == ">":
- #       line = line.replace(">", "")  # delete the ">"
-  #      line = line.rstrip()
+for line in recommended.readlines():
+    if line[0] == ">":
+        line = line.replace(">", "")  # delete the ">"
+        line = line.rstrip()
 
-   #     if "|" in line:
-    #        field = line.split("|")
-     #       antibodyName = field[0]
-      #      print(antibodyName)
+        if "|" in line:
+            field = line.split("|")
+            antibodyName = field[0]
 
-            #if antibodyName in R_antibodyWithASetOfChain:
-                #print(antibodyName)
-                #integratedSeqInfo.setdefault(antibodyName, [])
-            #print(integratedSeqInfo)
+        if antibodyName in R_antibodyWithASetOfChain:
+            integratedSeqInfo.setdefault(antibodyName, [])
 
-
-
-
-
-
-
+        if 
+print(integratedSeqInfo)
