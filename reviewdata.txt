@@ -1,21 +1,20 @@
 both in R&P: 
 
-
 emicizumab:
 L
 
 vanucizumab:
 H+L/H2+L2
 
-placulumab:
-not extract
+placulumab:  --currently not extract
+***not extract
 
-otlertuzumab:
+otlertuzumab:  --currently not extract 
 ***not extract?
 data complete  --not extract
 labelled as heavyLightFc Fusion chain
 
-cergutuzumab amunaleukin- H+HF+L :
+cergutuzumab amunaleukin- H+HF+L :  --currently add only L
 ***should have heavy chain information, now only has L
 only keep H + L
 HF now as heavy}
