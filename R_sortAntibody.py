@@ -100,10 +100,25 @@ print('\n')
 #
 ################################################################################
 integratedSeqInfo = {}
+isReadingSequence = False
+currentSequence = ""
 recommended = open(r'inndata\RL.faa', "r")
 
 for line in recommended.readlines():
+
+    if line[0] == '\n' or line[0] == '>' and isReadingSequence:
+        isReadingSequence = False
+        integratedSeqInfo[antibodyName].append(currentSequence)
+
+    if isReadingSequence:
+        currentSequence += line.restrip()
+
     if line[0] == ">":
+        if "-" in line:
+            isReadingSequence = False
+            break
+        else:
+            isReadingSequence = True
         line = line.replace(">", "")  # delete the ">"
         line = line.rstrip()
 
@@ -114,5 +129,5 @@ for line in recommended.readlines():
         if antibodyName in R_antibodyWithASetOfChain:
             integratedSeqInfo.setdefault(antibodyName, [])
 
-        if 
+
 print(integratedSeqInfo)
