@@ -178,30 +178,11 @@ print('\n')
 # R_sortAntibody.py + RL.faa -> stdout(print)
 
 for line in recommended.readlines():
-    if line[0] == '>' and isReadingSequence:
+    if line[0] == '>' or line[0] == '\n' and isReadingSequence:
         isReadingSequence = False
 
-        if antibodyName + '|' + 'Heavy' in integratedSeqInfo:
-            integratedSeqInfo[antibodyName + '|' + 'Heavy'].append(currentSequence)
-            currentSequence = ""
-
-        elif antibodyName + '|' + 'Heavy2' in integratedSeqInfo:
-            integratedSeqInfo[antibodyName + '|' + 'Heavy2'].append(currentSequence)
-            currentSequence = ""
-
-        elif antibodyName + '|' + 'Light' in integratedSeqInfo:
-            integratedSeqInfo[antibodyName + '|' + 'Heavy2'].append(currentSequence)
-            currentSequence = ""
-
-    elif line[0] == '\n' and isReadingSequence:
-        isReadingSequence = False
-
-        if antibodyName + '|' + 'Light' in integratedSeqInfo:
-            integratedSeqInfo[antibodyName + '|' + 'Light'].append(currentSequence)
-            currentSequence = ""
-
-        if antibodyName + '|' + 'Light2' in integratedSeqInfo:
-            integratedSeqInfo[antibodyName + '|' + 'Light2'].append(currentSequence)
+        if antibodyName in integratedSeqInfo:
+            integratedSeqInfo[antibodyName].append(currentSequence)
             currentSequence = ""
 
     if isReadingSequence:
@@ -213,13 +194,13 @@ for line in recommended.readlines():
             continue
         else:
             isReadingSequence = True
-
             line = line.replace(">", "")  # delete the ">"
             line = line.rstrip()
+            antibodyName = line
 
-            if "|" in line:
-                field = line.split("|")
-                antibodyName = field[0]
+            #if "|" in line:
+                #field = line.split("|")
+                #antibodyName = field[0]
 
 print('program 3 result: ')
 print(integratedSeqInfo)
