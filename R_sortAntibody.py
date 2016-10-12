@@ -19,6 +19,9 @@
 ################################################################################
 # step 1: Processing data in RL.faa
 ################################################################################
+import sys
+################################################################################
+
 # constant about RL.faa
 recommended = open(r'inndata\RL.faa', "r")
 dict_recommended_appearance = {}
@@ -102,7 +105,7 @@ for antibodyName in dict_recommended_appearance:
 #
 ################################################################################
 integratedSeqInfo = {}
-recommended = open(r'inndata\RL.faa', "r")
+recommended = open(r'inndata\RL.faa', 'r')
 
 for line in recommended.readlines():
     if line[0] == ">":
@@ -118,22 +121,24 @@ for line in recommended.readlines():
 print(integratedSeqInfo)
 recommended.close()
 ################################################################################
-recommended = open(r'inndata\RL.faa', "r")
+recommended = open(r'inndata\RL.faa', 'r')
 isReadingSequence = False
 currentSequence = ""
 
 for line in recommended.readlines():
     if line[0] == '\n' or line[0] == '>' and isReadingSequence:
         isReadingSequence = False
-        integratedSeqInfo[antibodyName].append(currentSequence)
+        if antibodyName in integratedSeqInfo:
+            integratedSeqInfo[antibodyName].append(currentSequence)
+            currentSequence = ""
 
     if isReadingSequence:
-        currentSequence += line.restrip()
+        currentSequence += line.strip()
 
     if line[0] == ">":
         if "-" in line:
             isReadingSequence = False
-            break
+            continue
         else:
             isReadingSequence = True
 
@@ -144,5 +149,9 @@ for line in recommended.readlines():
                 field = line.split("|")
                 antibodyName = field[0]
 
+savedStdout = sys.stdout
+with open(r'R_SeqDict.txt', 'w') as file:
+    sys.stdout = file
+#open(r'R_SeqDict.txt', 'w').write(integratedSeqInfo)
 print(integratedSeqInfo)
-recommended.close()
+#recommended.close()
