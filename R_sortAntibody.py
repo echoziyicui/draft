@@ -70,7 +70,8 @@ for line in recommended.readlines():
             elif chainType == "Fusion":
                 dict_recommended_appearance[antibodyName].append('F')
 
-print(dict_recommended_appearance)
+
+# print(dict_recommended_appearance)
 
 for antibodyName in dict_recommended_appearance:
     if dict_recommended_appearance[antibodyName] == ['H', 'L']:
@@ -87,12 +88,13 @@ for antibodyName in dict_recommended_appearance:
         value = dict_recommended_appearance[antibodyName]
         R_specialAntibody.setdefault(antibodyName, value)
 
-print("R_heavyChainAntibody =", R_heavyChainAntibody)
-print("R_lightChainAntibody =", R_lightChainAntibody)
-print("R_twoVersionAntibody=", R_twoVersionAntibody)
-print("R_AntibodyWithFusion=", R_AntibodyWithFusion)
-print("R_specialAntibody =", R_specialAntibody)
-print('\n')
+#print("R_antibodyWithASetOfChain=", R_antibodyWithASetOfChain)
+#print("R_heavyChainAntibody =", R_heavyChainAntibody)
+#print("R_lightChainAntibody =", R_lightChainAntibody)
+#print("R_twoVersionAntibody=", R_twoVersionAntibody)
+#print("R_AntibodyWithFusion=", R_AntibodyWithFusion)
+#print("R_specialAntibody =", R_specialAntibody)
+#print('\n')
 ################################################################################
 #
 # add the sequences of normal antibody with a set of heavy chain and light to a
@@ -100,12 +102,27 @@ print('\n')
 #
 ################################################################################
 integratedSeqInfo = {}
-isReadingSequence = False
-currentSequence = ""
 recommended = open(r'inndata\RL.faa', "r")
 
 for line in recommended.readlines():
+    if line[0] == ">":
+        line = line.replace(">", "")  # delete the ">"
+        line = line.rstrip()
 
+        if "|" in line:
+            field = line.split("|")
+            antibodyName = field[0]
+            if antibodyName in R_antibodyWithASetOfChain:
+                integratedSeqInfo.setdefault(antibodyName, [])
+
+print(integratedSeqInfo)
+recommended.close()
+################################################################################
+recommended = open(r'inndata\RL.faa', "r")
+isReadingSequence = False
+currentSequence = ""
+
+for line in recommended.readlines():
     if line[0] == '\n' or line[0] == '>' and isReadingSequence:
         isReadingSequence = False
         integratedSeqInfo[antibodyName].append(currentSequence)
@@ -119,15 +136,13 @@ for line in recommended.readlines():
             break
         else:
             isReadingSequence = True
-        line = line.replace(">", "")  # delete the ">"
-        line = line.rstrip()
 
-        if "|" in line:
-            field = line.split("|")
-            antibodyName = field[0]
+            line = line.replace(">", "")  # delete the ">"
+            line = line.rstrip()
 
-        if antibodyName in R_antibodyWithASetOfChain:
-            integratedSeqInfo.setdefault(antibodyName, [])
-
+            if "|" in line:
+                field = line.split("|")
+                antibodyName = field[0]
 
 print(integratedSeqInfo)
+recommended.close()
