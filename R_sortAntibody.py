@@ -20,7 +20,7 @@
 # step 1: Processing data in RL.faa
 ################################################################################
 # constant about recommended.faa
-recommended = open(r'C:\Users\echo\Desktop\RL.faa', "r")
+recommended = open(r'inndata\RL.faa', "r")
 dict_recommended_appearance = {}
 R_antibodyWithASetOfChain   = []
 R_heavyChainAntibody        = []
