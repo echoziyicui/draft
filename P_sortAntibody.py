@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 ################################################################################
 #
-# program: R_sortAntibody.py
+# program: P_sortAntibody.py
 # Author:  (Echo) Ziyi Cui
-# version: Version 1.1
-# Date:    12/10/2016
+# version: Version 1.2
+# Date:    13/10/2016
 #
 # Function:
 # ---------
@@ -14,10 +14,8 @@
 #
 # Usage:
 # ------
-# sortAntibody.py + RL.faa -> R_sortAntibody.txt
+# P_sortAntibody.py + PL.faa -> stdout
 #
-################################################################################
-# step 1: Processing data in PL.faa
 ################################################################################
 # constant about PL.faa
 proposed = open(r'inndata\PL.faa', "r")
@@ -98,10 +96,8 @@ print("P_AntibodyWithFusion=", P_AntibodyWithFusion)
 print("P_specialAntibody =", P_specialAntibody)
 print('\n')
 
-R_antibodyWithASetOfChain= ['daratumumab', 'bococizumab', 'lorvotuzumab mertansin', 'gantenerumab', 'tildrakizumab', 'milatuzumab', 'bavituximab', 'lenzilumab', 'tenatumomab', 'patritumab', 'concizumab', 'anifrolumab', 'rilotumumab', 'urelumab', 'alacizumab pegol', 'inclacumab', 'indatuximab ravtansin', 'sarilumab', 'suvizumab', 'pidilizumab', 'fresolimumab', 'vadastuximab talirin', 'mirvetuximab soravtansin', 'vandortuzumab vedotin', 'benralizumab', 'samalizumab', 'alirocumab', 'veltuzumab', 'brodalumab', 'amatuximab', 'brentuximab vedotin', 'evinacumab', 'idarucizumab', 'ralpancizumab', 'drozitumab', 'ontuxizumab', 'firivumab', 'lokivetmab', 'ulocuplumab', 'modotuximab', 'risankizumab', 'sacituzumab govitecan', 'imalumab', 'lirilumab', 'seribantumab', 'olokizumab', 'tezepelumab', 'simtuzumab', 'obiltoxaximab', 'dinutuximab', 'racotumomab', 'narnatumab', 'begelomab', 'tarextumab', 'denintuzumab mafodotin', 'enfortumab vedotin', 'romosozumab', 'perakizumab', 'sifalimumab', 'orticumab', 'dacetuzumab', 'emibetuzumab', 'brontictuzumab', 'sofituzumab vedotin', 'rinucumab', 'olaratumab', 'teplizumab', 'farletuzumab', 'flanvotumab', 'ocaratuzumab', 'enokizumab', 'afasevikumab', 'eldelumab', 'bezlotoxumab', 'evolocumab', 'lodelcizumab', 'trevogrumab', 'anetumab ravtansin', 'bimekizumab', 'cantuzumab ravtansin', 'vedolizumab', 'pateclizumab', 'navivumab', 'pamrevlumab', 'vatelizumab', 'landogrozumab', 'dupilumab', 'atezolizumab', 'margetuximab', 'solanezumab', 'glembatumumab vedotin', 'atinumab', 'secukinumab', 'pritoxaximab', 'tabalumab', 'nivolumab', 'namilumab', 'onartuzumab', 'ibalizumab', 'girentuximab', 'ponezumab', 'abrilumab', 'opicinumab', 'bleselumab', 'dapirolizumab pegol', 'imgatuzumab', 'lifastuzumab vedotin', 'fasinumab', 'rivabazumab pegol', 'durvalumab', 'rafivirumab', 'fulranumab', 'elotuzumab', 'enavatuzumab', 'pinatuzumab vedotin', 'figitumumab', 'monalizumab', 'pembrolizumab', 'varlilumab', 'rontalizumab', 'isatuximab', 'fezakinumab', 'blosozumab', 'lampalizumab', 'indusatumab', 'dectrekumab', 'icrucumab', 'indusatumab vedotin', 'ramucirumab', 'tregalizumab', 'lilotomab', 'vesencumab', 'tosatoxumab', 'tralokinumab', 'oxelumab', 'otelixizumab', 'ficlatuzumab', 'tisotumab vedotin', 'vorsetuzumab mafodotin', 'quilizumab', 'duligotuzumab', 'nemolizumab', 'lucatumumab', 'fletikumab', 'tesidolumab', 'siltuximab', 'itolizumab', 'enoticumab', 'actoxumab', 'ozanezumab', 'emactuzumab', 'mavrilimumab', 'polatuzumab vedotin', 'ganitumab', 'lebrikizumab', 'bimagrumab', 'ligelizumab', 'vantictumab', 'briakinumab', 'avelumab', 'nesvacumab', 'foralumab', 'aducanumab', 'rovalpituzumab tesirin', 'crenezumab', 'coltuximab ravtansin', 'mogamulizumab', 'vorsetuzumab', 'rovalpituzumab', 'parsatuzumab', 'cixutumumab', 'setoxaximab', 'roledumab', 'tisotumab', 'sirukumab', 'trastuzumab emtansin', 'lumretuzumab', 'panobacumab', 'foravirumab', 'carlumab', 'demcizumab', 'guselkumab', 'futuximab', 'ublituximab', 'tovetumab', 'elgemtumab', 'codrituzumab', 'dalotuzumab', 'diridavumab', 'plozalizumab', 'etaracizumab', 'obinutuzumab', 'necitumumab', 'tigatuzumab', 'glembatumumab', 'ensituximab', 'robatumumab', 'intetumumab', 'labetuzumab govitecan', 'etrolizumab', 'dusigitumab', 'abituzumab', 'gevokizumab', 'ixekizumab', 'teprotumumab', 'abagovomab', 'clazakizumab']
-
-for antibodyName in P_antibodyWithASetOfChain:
-    if antibodyName in R_antibodyWithASetOfChain:
-        pass
-    else:
-        print(antibodyName)
+#for antibodyName in P_antibodyWithASetOfChain:
+    #if antibodyName in R_antibodyWithASetOfChain:
+       # pass
+   # else:
+       # print(antibodyName)
