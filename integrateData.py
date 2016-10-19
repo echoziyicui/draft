@@ -3,8 +3,8 @@
 #
 # program: integrateData.py
 # Author:  (Echo) Ziyi Cui
-# version: Version 1.3
-# Date:    17/10/2016
+# version: Version 1.4
+# Date:    19/10/2016
 #
 # Function:
 # ---------
@@ -315,7 +315,7 @@ for line in proposed.readlines():
             antibodyName      = line
 
 print("main program 4 result:")
-print("integratedSeqInfo=", integratedSeqInfo)
+#print("integratedSeqInfo=", integratedSeqInfo)
 print(len(integratedSeqInfo))
 print("warningList=", warningList)
 print(len(warningList))
@@ -326,7 +326,7 @@ print("\n")
 proposed.close()
 
 ################################################################################
-### main program 7
+### main program 5
 #
 # 19.10.16
 #
@@ -350,14 +350,14 @@ for line in imagedSeq.readlines():
             if integratedSeqInfo[antibodyName] == i_sequence:
                 pass
 
-            else:
-                print(antibodyName)
+            #else:
+            #   print(antibodyName)
 
         else:
             integratedSeqInfo.setdefault(antibodyName, None)
             integratedSeqInfo[antibodyName] = i_sequence
             seqImagedOnly.append(antibodyName)
-            print(antibodyName)
+            #print(antibodyName)
 
         p_sequence = ""
 
@@ -374,7 +374,7 @@ for line in imagedSeq.readlines():
             line              = line.rstrip()
             antibodyName      = line
 
-print("main program 7 result:")
+print("main program 5 result:")
 print("integratedSeqInfo=", integratedSeqInfo)
 print(len(integratedSeqInfo))
 print("seqImagedOnly=", seqImagedOnly)
@@ -385,7 +385,7 @@ print("\n")
 imagedSeq.close()
 
 ################################################################################
-### main program 5
+### main program 6
 #
 # 13.10.16
 #
@@ -453,7 +453,7 @@ for antibodyName in dict_integratedSeqInfo_appearance:
         value = dict_integratedSeqInfo_appearance[antibodyName]
         specialAntibody.setdefault(antibodyName, value)
 
-print("program 5 results: ")
+print("program 6 results: ")
 print("antibodyWithASetOfChain=", antibodyWithASetOfChain)
 print(len(antibodyWithASetOfChain))
 print("heavyChainAntibody =", heavyChainAntibody)
@@ -469,7 +469,7 @@ print(len(specialAntibody))
 print('\n')
 
 ################################################################################
-### main program 6
+### main program 7
 #
 # 19.10.16
 #
@@ -530,13 +530,13 @@ for key in integratedSeqInfo:
         formatData += ">" + correspondingH2 + '\n' + integratedSeqInfo[correspondingH2] \
                       + ">" + correspondingL2 + '\n' + integratedSeqInfo[correspondingL2] + '\n\n'
 
-print('program 6 result: ')
+#print('program 7 result: ')
 #print(formatData)
 #print('\n')
-#savedStdout = sys.stdout
-#with open('integratedData.txt', 'w+') as file:
-#    sys.stdout = file
-#    print(formatData)
-#sys.stdout = savedStdout
+savedStdout = sys.stdout
+with open('integratedData.txt', 'w+') as file:
+    sys.stdout = file
+    print(formatData)
+sys.stdout = savedStdout
 
 
