@@ -1,4 +1,8 @@
-both in R&P: 
+both in R&P:
+
+only interested in the VH +VL
+need only the first 115 aa of each chain.
+ 
 
 emicizumab:
 L
@@ -6,22 +10,28 @@ L
 vanucizumab:
 H+L/H2+L2
 
-placulumab:  --currently not extract
-***not extract
+placulumab:  --currently not extract --¡· not extract
 
-otlertuzumab:  --currently not extract 
-***not extract?
-data complete  --not extract
-labelled as heavyLightFc Fusion chain
+otlertuzumab:  --currently not extract -->Fv,split to VH + VL
 
-cergutuzumab amunaleukin- H+HF+L :  --currently add only L
+EVQLVQSGAEVKKPGESLKISCKGSGYSFTGYNMNWVRQMPGKGLEWMGN   -51
+IDPYYGGTTYNRKFKGQVTISADKSISTAYLQWSSLKASDTAMYYCARSV   -51
+GPFDSWGQGTLVTVSS|GGGGSGGGGSGGGGSGGGGSGGGGS||EIVLTQSPA
+TLSLSPGERATLSCRASENVYSYLAWYQQKPGQAPRLLIYFAKTLAEGIP
+ARFSGSGSGTDFTLTISSLEPEDFAVYYCQHHSDNPWTFGQGTKVEIK|GD
+QEPKSSDKTHTSPPCPAPELLGGPSVFLFPPKPKDTLMISRTPEVTCVVV
+DVSHEDPEVKFNWYVDGVEVHNAKTKPREEQYNSTYRVVSVLTVLHQDWL
+NGKEYKCKVSNKALPAPIEKTISKAKGQPREPQVYTLPPSRDELTKNQVS
+LTCLVKGFYPSDIAVEWESNGQPENNYKTTPPVLDSDGSFFLYSKLTVDK
+SRWQQGNVFSCSVMHEALHNHYTQKSLSLSPGK
+
+
+cergutuzumab amunaleukin- H+HF+L :  --currently add only L -->?
 ***should have heavy chain information, now only has L
 only keep H + L
 HF now as heavy}
 
-citatuzumab bogatox-H + L|fusion:
-***keep it,but indicate it as L|fusion
-
+citatuzumab bogatox-H + L|fusion:   --> keep it as only need the non-fusion part
 
 
 
