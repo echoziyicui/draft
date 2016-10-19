@@ -338,7 +338,7 @@ proposed.close()
 # ------
 # R_sortAntibody.py + PL.faa -> stdout(print)
 
-imagedSeq = open(r'checkabnoseq\RLandPL115imagedSeq.txt', "r")
+imagedSeq = open(r'checkabnoseq\RLandPL115imagedSeq.faa', "r")
 isReadingSequence = False
 
 for line in imagedSeq.readlines():
