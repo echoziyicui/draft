@@ -26,7 +26,7 @@ import sys
 
 ################################################################################
 # constant about RL.faa
-recommended                 = open(r'inndata\RL.faa', "r")
+
 dict_recommended_appearance = {}
 R_antibodyWithASetOfChain   = []
 R_heavyChainAntibody        = []
@@ -74,10 +74,13 @@ seqImagedOnly             = []
 
 
 # add chain appearance info to each antibody.
-for line in recommended.readlines():
-    if line[0] == ">":
-        line   = line.replace(">", "")  # delete the ">"
-        line   = line.rstrip()
+
+def ObtainAntibodyInRecomended(filePath):
+    recommended  = open(filePath, "r")
+    for line in recommended.readlines():
+        if line[0] == ">":
+            line   = line.replace(">", "")  # delete the ">"
+            line   = line.rstrip()
 
         if "|" in line:
             field         = line.split("|")
@@ -100,43 +103,45 @@ for line in recommended.readlines():
             elif chainType == "Fusion":
                 dict_recommended_appearance[antibodyName].append('F')
 
+
+
+   #  print('dict = ', dict_recommended_appearance)
+
+
+    # sort these antibodyNames into different groups, according to their chain appearance.
+    for antibodyName in dict_recommended_appearance:
+        if dict_recommended_appearance[antibodyName]   == ['H', 'L']:
+            R_antibodyWithASetOfChain.append(antibodyName)
+        elif dict_recommended_appearance[antibodyName] == ['H']:
+            R_heavyChainAntibody.append(antibodyName)
+        elif dict_recommended_appearance[antibodyName] == ['L']:
+            R_lightChainAntibody.append(antibodyName)
+        elif 'H2' in dict_recommended_appearance[antibodyName] or 'L2' in dict_recommended_appearance[antibodyName]:
+            R_twoVersionAntibody.append(antibodyName)
+        elif 'F' in dict_recommended_appearance[antibodyName]:
+            R_antibodyWithFusion.append(antibodyName)
         else:
-            i += 1
-            print(i, ".", line)
+            value = dict_recommended_appearance[antibodyName]
+            R_specialAntibody.setdefault(antibodyName, value)
 
-print('dict = ', dict_recommended_appearance)
+   #  print("program 1 results: ")
+   #  print("R_antibodyWithASetOfChain=", R_antibodyWithASetOfChain)
+   #  print(len(R_antibodyWithASetOfChain))
+   #  print("R_heavyChainAntibody =", R_heavyChainAntibody)
+   #  print(len(R_heavyChainAntibody))
+   #  print("R_lightChainAntibody =", R_lightChainAntibody)
+   #  print(len(R_lightChainAntibody))
+   #  print("R_twoVersionAntibody=", R_twoVersionAntibody)
+   #  print(len(R_twoVersionAntibody))
+   #  print("R_antibodyWithFusion=", R_antibodyWithFusion)
+   #  print(len(R_antibodyWithASetOfChain))
+   #  print("R_specialAntibody =", R_specialAntibody)
+   #  print(len(R_specialAntibody))
+   # print('\n')
 
 
-# sort these antibodyNames into different groups, according to their chain appearance.
-for antibodyName in dict_recommended_appearance:
-    if dict_recommended_appearance[antibodyName]   == ['H', 'L']:
-        R_antibodyWithASetOfChain.append(antibodyName)
-    elif dict_recommended_appearance[antibodyName] == ['H']:
-        R_heavyChainAntibody.append(antibodyName)
-    elif dict_recommended_appearance[antibodyName] == ['L']:
-        R_lightChainAntibody.append(antibodyName)
-    elif 'H2' in dict_recommended_appearance[antibodyName] or 'L2' in dict_recommended_appearance[antibodyName]:
-        R_twoVersionAntibody.append(antibodyName)
-    elif 'F' in dict_recommended_appearance[antibodyName]:
-        R_antibodyWithFusion.append(antibodyName)
-    else:
-        value = dict_recommended_appearance[antibodyName]
-        R_specialAntibody.setdefault(antibodyName, value)
+ObtainAntibodyInRecomended("inndata\\RL.faa")
 
-print("program 1 results: ")
-print("R_antibodyWithASetOfChain=", R_antibodyWithASetOfChain)
-print(len(R_antibodyWithASetOfChain))
-print("R_heavyChainAntibody =", R_heavyChainAntibody)
-print(len(R_heavyChainAntibody))
-print("R_lightChainAntibody =", R_lightChainAntibody)
-print(len(R_lightChainAntibody))
-print("R_twoVersionAntibody=", R_twoVersionAntibody)
-print(len(R_twoVersionAntibody))
-print("R_antibodyWithFusion=", R_antibodyWithFusion)
-print(len(R_antibodyWithASetOfChain))
-print("R_specialAntibody =", R_specialAntibody)
-print(len(R_specialAntibody))
-print('\n')
 
 ################################################################################
 ### main program 2
