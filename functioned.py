@@ -67,7 +67,7 @@ def testOpen(filePath):
 #
 # add_key() --> integratedSeqInfo = {antibodyName | Heavy/light :[]}
 # build a new dictionary named as integratedSeqInfo, use the antibodyName as the
-# key and the sequence as the value
+# key
 #
 # Usage:
 # ------
@@ -107,8 +107,8 @@ def add_seq():
             if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
                 isReadingSequence = False
 
-                if key in integratedSeqInfo:
-                    integratedSeqInfo[antibodyKey] += r_sequence
+                if antibodyKey in integratedSeqInfo:
+                    integratedSeqInfo[antibodyKey] = r_sequence
                     r_sequence = ""
 
             if isReadingSequence:
@@ -138,7 +138,7 @@ def add_seq():
 # the sequence in integratedseqInfo.
 # 2.If antibody from PL.faa is not already in integratedseqInfo, then add its
 # sequence into integratedseqInfo.
-# 3.If antibody from PL.faa is is in integratedseqInfo and the sequences from two
+# 3.If antibody from PL.faa is in integratedseqInfo and the sequences from two
 # source are the same, then pass.
 #
 # Usage:
@@ -147,7 +147,7 @@ def add_seq():
 
 
 def check_pl():
-    pl          = open(sys.argv[1], "r")
+    pl          = open(sys.argv[2], "r")
     isReadingSequence = False
     antibodyKey       = ""
     p_sequence        = ""
@@ -168,7 +168,7 @@ def check_pl():
                 #elif antibodyKey == 'otlertuzumab|Heavy':
                     #pass
             else:
-                integratedSeqInfo.setdefault(antibodyKey, None)
+                integratedSeqInfo.setdefault(antibodyKey, "")
                 integratedSeqInfo[antibodyKey] = p_sequence
                 antibodyInPLOnly.append(antibodyKey)
 
@@ -220,7 +220,7 @@ def add_imagedSeq():
         if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
             isReadingSequence = False
 
-            integratedSeqInfo.setdefault(antibodyKey, None)
+            integratedSeqInfo.setdefault(antibodyKey, "")
             integratedSeqInfo[antibodyKey] = i_sequence
             seqImagedOnly.append(antibodyKey)
             i_sequence = ""
@@ -390,6 +390,6 @@ print(onlyLight)
 print(pairWithFusion)
 print(multiPairWithFusion)
 
-# print(formatData)
+# print(formatData
 
 
