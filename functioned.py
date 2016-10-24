@@ -27,6 +27,14 @@ import sys
 ################################################################################
 # constant
 integratedSeqInfo = {}
+chain_appearance = {}
+noSeq = []
+allInOne = []
+pairChain = []
+onlyHeavy =[]
+onlyLight = []
+pairWithFusion = []
+multiPairWithFusion = []
 
 ################################################################################
 # UsageDie()
@@ -163,7 +171,7 @@ def check_pl():
             if antibodyKey in integratedSeqInfo:
                 if integratedSeqInfo[antibodyKey] != p_sequence:
                     if antibodyKey not in warningList:
-                        warningList.append(antibodyName)
+                        warningList.append(antibodyKey)
 
                 #elif antibodyKey == 'otlertuzumab|Heavy':
                     #pass
@@ -257,14 +265,7 @@ def add_imagedSeq():
 def sort_seq():
 
 
-    chain_appearance = {}
-    noSeq = []
-    allInOne = []
-    pairChain = []
-    onlyHeavy =[]
-    onlyLight = []
-    pairWithFusion = []
-    multiPairWithFusion = []
+
 
     for key in integratedSeqInfo:
         if '-no sequence' in key:
@@ -283,7 +284,7 @@ def sort_seq():
                 chain_appearance[antibodyName].append(chainType)
             else:    #case when len(field) = 3
                 antibodyName =field[0]
-                chainType =  field[1] + filed [2]
+                chainType =  field[1] + field [2]
                 chain_appearance.setdefault(antibodyName, [])
                 chain_appearance[antibodyName].append(chainType)
 
