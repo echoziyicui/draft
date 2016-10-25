@@ -29,6 +29,7 @@ import sys
 
 integratedSeqInfo = {}
 antibodyInRL = []
+antibodyNoSeqInRL = []
 pendingList =[]
 chain_appearance = {}
 noSeq = []
@@ -95,15 +96,18 @@ def add_key():
     antibodyInRL = []
     rl = open(sys.argv[1], "r")
     for line in rl.readlines():
-        if line[0] == ">" and "|" in line:
+        if line[0] == ">" in line:
             key = line.replace(">", "").rstrip()
             integratedSeqInfo.setdefault(key, "")
             if '- no sequence ' in key:
-                pass
+                field = key.split(' - ')
+                antibodyName = field[0]
+                antibodyNoSeqInRL.append(antibodyName)
             else:
                 field = key.split('|')
                 antibodyName = field[0]
-                antibodyInRL.append(antibodyName)
+                antibodyInRL.append(antibodyName) # only contain those antibody names with sequences.
+    #print('1:', integratedSeqInfo )
     rl.close()
 
 ################################################################################
@@ -125,7 +129,6 @@ def add_seq():
         isReadingSequence = False
         antibodyKey       = ""
         r_sequence        = ""
-
 
         for line in rl.readlines():
             if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
@@ -176,15 +179,13 @@ def check_pl():
     antibodyKey       = ""
     p_sequence        = ""
 
-
-
     for line in pl.readlines():
 
         if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
             isReadingSequence = False
 
             if antibodyKey in integratedSeqInfo:
-                if integratedSeqInfo[antibodyKey] ==  p_sequence:
+                if integratedSeqInfo[antibodyKey] == p_sequence:
                     pass
                 elif antibodyKey not in warningList:
                     warningList.append(antibodyKey)
@@ -195,7 +196,7 @@ def check_pl():
                 integratedSeqInfo.setdefault(antibodyKey, "")
                 integratedSeqInfo[antibodyKey] = p_sequence
 
-                if antibodyName in antibodyInRL:
+                if (antibodyName + ' - no sequence') in integratedSeqInfo:
                     integratedSeqInfo.pop(antibodyName + ' - no sequence')
                     pendingList.append(antibodyName)
                 else:
@@ -214,9 +215,9 @@ def check_pl():
                 field = antibodyKey.split(" - ")
                 antibodyName = field[0]
 
-                if antibodyKey in integratedSeqInfo:
+                if antibodyKey in integratedSeqInfo: # In R'mab - no seq' already in integratedSeqInfo
                     pass
-                elif antibodyName in antibodyInRL:
+                elif antibodyName in antibodyInRL: # In R: mab|Heavy; mab|Light
                     pass
                 else:
                     integratedSeqInfo.setdefault(antibodyKey, "")
@@ -226,6 +227,7 @@ def check_pl():
                 isReadingSequence = True
                 antibodyKey = line.replace(">", "").rstrip()
 
+    #print('warningList=', warningList)
     pl.close()
 
 #print("main program 4 result:")
@@ -250,7 +252,7 @@ def check_pl():
 # ------
 # integrateData.py + imagedSeqR.faa + imagedSeqP.faa -> stdout(print)
 
-def add_imagedSeq():
+def add_imagedSeqR():
 
     imagedSeqR       = open(sys.argv[3], "r")
     imagedSeqP       = open(sys.argv[4], "r")
@@ -267,9 +269,12 @@ def add_imagedSeq():
             field = antibodyKey.split('|')
             antibodyName = field[0]
 
-            if (antibodyKey in integratedSeqInfo) and (integratedSeqInfo[antibodyKey] != ir_sequence):
-                integratedSeqInfo[antibodyKey] = ir_sequence
-                warningList.append(antibodyKey)
+            if antibodyKey in integratedSeqInfo:
+                if integratedSeqInfo[antibodyKey] != ir_sequence:
+                    integratedSeqInfo[antibodyKey] = ir_sequence
+                    warningList.append(antibodyKey)
+                else:
+                    pass
 
             elif (antibodyName + ' - no sequence') in integratedSeqInfo:
 
@@ -290,11 +295,12 @@ def add_imagedSeq():
                         if line[0] == (">" + antibodyKey):
                             isReadingSequence = True
 
-                integratedSeqInfo.setdefault(antibodyKey, "")
-                integratedSeqInfo[antibodyKey] = ir_sequence
-                seqImagedOnly.append(antibodyKey)
                 integratedSeqInfo.pop(antibodyName + ' - no sequence')
-                ir_sequence = ""
+                seqImagedOnly.append(antibodyKey)
+
+            integratedSeqInfo.setdefault(antibodyKey, "")
+            integratedSeqInfo[antibodyKey] = ir_sequence
+            ir_sequence = ""
 
         if isReadingSequence:
                 ir_sequence += line
@@ -307,8 +313,23 @@ def add_imagedSeq():
                 isReadingSequence = True
                 antibodyKey       = line.replace(">", "").rstrip()
 
+    imagedSeqR.close()
+    imagedSeqP.close()
 
+################################################################################
+### Function 5
+#
+# 25.10.16
+#
+# 1.0 version By:(Echo) Ziyi Cui
+#
+# add imaged sequence from PL
+
+def add_imagedSeqP():
+
+    imagedSeqP = open(sys.argv[4], "r")
     isReadingSequence = False
+    ip_sequence = ""
     for line in imagedSeqP.readlines():
 
         if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
@@ -316,15 +337,15 @@ def add_imagedSeq():
             field = antibodyKey.split('|')
             antibodyName = field[0]
 
-            if (antibodyKey in integratedSeqInfo) and (integratedSeqInfo[antibodyKey] != ip_sequence):
-                warningList.append(antibodykey)
+            if antibodyKey in integratedSeqInfo:
+                if integratedSeqInfo[antibodyKey] != ip_sequence:
+                    warningList.append(antibodykey)
 
-            if (antibodyName + ' - sequence') in integratedSeqInfo:
+            elif (antibodyName + ' - sequence') in integratedSeqInfo:
                 integratedSeqInfo.setdefault(antibodyKey, "")
                 integratedSeqInfo[antibodyKey] = ip_sequence
                 seqImagedOnly.append(antibodyKey)
                 integratedSeqInfo.pop(antibodyName + ' - no sequence')
-
             ip_sequence = ""
 
         if isReadingSequence:
@@ -338,8 +359,6 @@ def add_imagedSeq():
                 isReadingSequence = True
                 antibodyKey = line.replace(">", "").rstrip()
 
-
-    imagedSeqR.close()
     imagedSeqP.close()
 
 
@@ -351,7 +370,7 @@ def add_imagedSeq():
 #print("\n")
 
 ################################################################################
-### Function 5
+### Function 6
 #
 # 24.10.16
 #
@@ -500,7 +519,8 @@ testOpen(sys.argv[4])
 add_key()
 add_seq()
 check_pl()
-add_imagedSeq()
+add_imagedSeqR()
+add_imagedSeqP()
 sort_seq()
 format_data()
 
