@@ -37,6 +37,7 @@ pairChain = []
 onlyHeavy =[]
 onlyLight = []
 pairWithFusion = []
+multiPair = []
 multiPairWithFusion = []
 
 warningList       = []
@@ -341,6 +342,7 @@ def add_imagedSeq():
     imagedSeqR.close()
     imagedSeqP.close()
 
+
 #print("main program 5 result:")
 #print("integratedSeqInfo=", integratedSeqInfo)
 #print(len(integratedSeqInfo))
@@ -364,7 +366,7 @@ def sort_seq():
         if '- no sequence' in key:
             field = key.split('-')
             noSeq.append(field[0])
-        elif ('-' in key ) and ('|' in key):
+        elif ('-' in key) and ('|' in key):
             field = key.split('|')
             allInOne.append(field[0])
 
@@ -382,6 +384,10 @@ def sort_seq():
                 chain_appearance[antibodyName].append(chainType)
 
 
+    print(noSeq) #bug
+    print(chain_appearance['citatuzumab bogatox']) #bug
+
+
     for antibodyName in chain_appearance:
         if chain_appearance[antibodyName] == ['Heavy', 'Light'] \
           or chain_appearance[antibodyName] == ['Light' , 'Heavy'] :
@@ -390,12 +396,16 @@ def sort_seq():
             onlyHeavy.append(antibodyName)
         elif chain_appearance[antibodyName] == ['Light']:
             onlyLight.append(antibodyName)
+        elif 'Heavy2' or 'Light2' in chain_appearance[antibodyName]:
+            multiPair.append(antibodyName)
 
         else:
             if len(chain_appearance[antibodyName]) == 2:
                 pairWithFusion.append(antibodyName)
             else:
                 multiPairWithFusion.append(antibodyName)
+
+    print('multiPair=', multiPair)
 
 ################################################################################
 ### Function 6
@@ -417,7 +427,7 @@ def format_data():
     formatData = ''
 
     for key in integratedSeqInfo:
-        if '-no sequence' in key:
+        if ' - no sequence' in key:
             formatData += '>' + key + '\n\n'
 
         else:
@@ -426,6 +436,8 @@ def format_data():
             chainType = field[1]
             correspondingH = antibodyName + '|Heavy'
             correspondingL = antibodyName + '|Light'
+            correspondingH2 = antibodyName + '|Heavy2'
+            correspondingL2 = antibodyName + '|Light2'
 
             if antibodyName in pairChain and chainType == 'Heavy':
                 formatData += '>' + key + '\n' + integratedSeqInfo[key] + \
@@ -438,6 +450,21 @@ def format_data():
                 else:
                     fusedL = correspondingL + '|Fusion'
                     formatData += '>' + fusedL + 'n' + integratedSeqInfo[fusedL] + '\n\n'
+
+            elif (antibodyName in multiPair) and (chainType == 'Heavy'):
+                formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n'
+                if correspondingL in integratedSeqInfo:
+                    formatData += '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
+
+                if correspondingH2 in integratedSeqInfo:
+                    formatData += '>' + correspondingH2 + '\n' + integratedSeqInfo[correspondingH2] + '\n'
+                else:
+                    formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n'
+
+                if correspondingL2 in integratedSeqInfo:
+                    formatData += '>' + correspondingL2 + '\n' + integratedSeqInfo[correspondingL2] + '\n\n'
+                else:
+                    formatData += '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
 
             elif antibodyName in multiPairWithFusion:
                     if chainType == 'Heavy2':
@@ -477,14 +504,15 @@ add_imagedSeq()
 sort_seq()
 format_data()
 
-print(noSeq)
-print(allInOne)
-print(pairChain)
-print(onlyHeavy)
-print(onlyLight)
-print(pairWithFusion)
-print(multiPairWithFusion)
+print('noSeq=', noSeq)
+print('allInOne=', allInOne)
+print('pairChain=', pairChain)
+print('onlyHeavy=', onlyHeavy)
+print('onlyLight=', onlyLight)
+print('multiPair=', multiPair)
+print('pairWithFusion=', pairWithFusion)
+print('multiPairWithFusion=', multiPairWithFusion)
 
-# print(formatData)
+#print(formatData)
 
 
