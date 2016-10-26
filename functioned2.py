@@ -32,6 +32,7 @@ PseqDict = {}
 warningList  = []
 
 integratedSeqInfo = {}
+abWithSeq = []
 
 SeqInfo = {}
 
@@ -207,11 +208,10 @@ def add_imagedSeq(InputFileHandle):
                 if (antibodyName + ' - no sequence') in RseqDict:
                     RseqDict.pop(antibodyName + ' - no sequence')
                     RabNoSeq.remove(antibodyName)
-                    print('3.1', antibodyName)
                 if antibodyName not in RabWithSeq:
                     RabWithSeq.append(antibodyName)
-                    print('3.2', antibodyName)
-            else:
+
+            elif InputFileHandle == sys.argv[4]:
                 PseqDict.setdefault(antibodyKey, '')
                 PseqDict[antibodyKey] = i_sequence
 
@@ -220,6 +220,7 @@ def add_imagedSeq(InputFileHandle):
                     PabNoSeq.remove(antibodyName)
                 if antibodyName not in PabWithSeq:
                     PabWithSeq.append(antibodyName)
+
 
             i_sequence = ''
 
@@ -236,6 +237,11 @@ def add_imagedSeq(InputFileHandle):
 
     print('3.R-No', len(RabNoSeq))
     print('3.R-with', len(RabWithSeq))
+    #print(PseqDict)
+    if InputFileHandle == sys.argv[3]:
+        print('R:bevacizumab beta|Heavy', RseqDict['bevacizumab beta|Heavy'])
+    if InputFileHandle == sys.argv[4]:
+        print('P:bevacizumab beta|Heavy', PseqDict['bevacizumab beta|Heavy'])
     #print(RabWithSeq)
 
     imagedSeq.close()
@@ -256,6 +262,7 @@ def integrate_dicts():
     global integratedSeqInfo
     global warningList
     global noSeq
+    global abWithSeq
 
     for antibodyKey in PseqDict:
         if antibodyKey in RseqDict:
@@ -280,8 +287,10 @@ def integrate_dicts():
                 print(antibodyName)
 
     integratedSeqInfo = RseqDict
+    abWithSeq = RabWithSeq
     noSeq = RabNoSeq
 
+    print('4.warning List', warningList)
     #print(integratedSeqInfo)
     #print('abWithSeq =', abWithSeq)
 
@@ -432,10 +441,10 @@ testOpen(sys.argv[4])
 add_key(sys.argv[1])
 add_seq(sys.argv[1])
 add_imagedSeq(sys.argv[3])
-#add_key(sys.argv[2])
-#add_seq(sys.argv[2])
-#add_imagedSeq(sys.argv[4])
-#integrate_dicts()
+add_key(sys.argv[2])
+add_seq(sys.argv[2])
+add_imagedSeq(sys.argv[4])
+integrate_dicts()
 #sort_seq()
 #format_data()
 #print(formatData)
