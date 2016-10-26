@@ -28,8 +28,9 @@ import sys
 # constant
 
 integratedSeqInfo = {}
-antibodyInRL = []
+antibodyNoSeq ={}
 antibodyNoSeqInRL = []
+antibodyInRL = []
 pendingList =[]
 chain_appearance = {}
 noSeq = []
@@ -89,17 +90,15 @@ def testOpen(filePath):
 # ------
 # integrateData.py + RL.faa -> stdout(print)
 
-
-
-
 def add_key():
-    antibodyInRL = []
+
     rl = open(sys.argv[1], "r")
     for line in rl.readlines():
         if line[0] == ">" in line:
             key = line.replace(">", "").rstrip()
             integratedSeqInfo.setdefault(key, "")
-            if '- no sequence ' in key:
+
+            if '- no sequence' in key:
                 field = key.split(' - ')
                 antibodyName = field[0]
                 antibodyNoSeqInRL.append(antibodyName)
@@ -107,7 +106,10 @@ def add_key():
                 field = key.split('|')
                 antibodyName = field[0]
                 antibodyInRL.append(antibodyName) # only contain those antibody names with sequences.
+
+    print(len(antibodyNoSeqInRL))
     #print('1:', integratedSeqInfo )
+    #print('antibodyNoSeqInRL', antibodyNoSeqInRL)
     rl.close()
 
 ################################################################################
@@ -178,7 +180,7 @@ def check_pl():
     isReadingSequence = False
     antibodyKey       = ""
     p_sequence        = ""
-
+    i = 0
     for line in pl.readlines():
 
         if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
@@ -200,10 +202,8 @@ def check_pl():
                     integratedSeqInfo.pop(antibodyName + ' - no sequence')
                     pendingList.append(antibodyName)
                 else:
-                    antibodyInPLOnly.append(antibodyKey)
-
+                    antibodyInPLOnly.append(antibodyKey) # those abs in RL even do not have a name
             p_sequence            = ""
-
 
         if isReadingSequence:
             p_sequence       += line
@@ -214,30 +214,18 @@ def check_pl():
                 antibodyKey = line.replace(">", "").rstrip()
                 field = antibodyKey.split(" - ")
                 antibodyName = field[0]
-
-                if antibodyKey in integratedSeqInfo: # In R'mab - no seq' already in integratedSeqInfo
-                    pass
-                elif antibodyName in antibodyInRL: # In R: mab|Heavy; mab|Light
-                    pass
-                else:
+                if (antibodyKey not in integratedSeqInfo) and (antibodyName in antibodyInRL):
                     integratedSeqInfo.setdefault(antibodyKey, "")
-                continue
 
+                continue
             else:
                 isReadingSequence = True
                 antibodyKey = line.replace(">", "").rstrip()
 
-    #print('warningList=', warningList)
+    print('3.warningList=', warningList)
+
     pl.close()
 
-#print("main program 4 result:")
-#print("integratedSeqInfo=", integratedSeqInfo)
-#print(len(integratedSeqInfo))
-#print("warningList=", warningList)
-#print(len(warningList))
-#print("antibodyInPLOnly=", antibodyInPLOnly)
-#print(len(antibodyInPLOnly))
-#print("\n")
 
 ################################################################################
 ### Function 4
@@ -369,137 +357,135 @@ def add_imagedSeqP():
 #print(len(seqImagedOnly))
 #print("\n")
 
-################################################################################
-### Function 6
-#
-# 24.10.16
-#
-# 1.2 version By:(Echo) Ziyi Cui
-#
-# sort integratedSeqInfo according to chainType
+            ################################################################################
+            ### Function 6
+            #
+            # 24.10.16
+            #
+            # 1.2 version By:(Echo) Ziyi Cui
+            #
+            # sort integratedSeqInfo according to chainType
 
 
-def sort_seq():
+            def sort_seq():
 
-    for key in integratedSeqInfo:
-        if '- no sequence' in key:
-            field = key.split('-')
-            noSeq.append(field[0])
-        elif ('-' in key) and ('|' in key):
-            field = key.split('|')
-            allInOne.append(field[0])
+                for key in integratedSeqInfo:
+                    if '- no sequence' in key:
+                        field = key.split('-')
+                        noSeq.append(field[0])
+                    elif ('-' in key) and ('|' in key):
+                        field = key.split('|')
+                        allInOne.append(field[0])
 
-        else:
-            field = key.split('|')
-            if len(field) == 2:
-                antibodyName = field[0]
-                chainType = field[-1]
-                chain_appearance.setdefault(antibodyName, [])
-                chain_appearance[antibodyName].append(chainType)
-            else:    #case when len(field) = 3
-                antibodyName =field[0]
-                chainType =  field[1] + field [2]
-                chain_appearance.setdefault(antibodyName, [])
-                chain_appearance[antibodyName].append(chainType)
+                    else:
+                        field = key.split('|')
+                        if len(field) == 2:
+                            antibodyName = field[0]
+                            chainType = field[-1]
+                            chain_appearance.setdefault(antibodyName, [])
+                            chain_appearance[antibodyName].append(chainType)
+                        else:  # case when len(field) = 3
+                            antibodyName = field[0]
+                            chainType = field[1] + field[2]
+                            chain_appearance.setdefault(antibodyName, [])
+                            chain_appearance[antibodyName].append(chainType)
+
+                print("no seq", noSeq)  # bug
+                print('/n/n')
+                print(chain_appearance['citatuzumab bogatox'])  # bug
+
+                for antibodyName in chain_appearance:
+                    if chain_appearance[antibodyName] == ['Heavy', 'Light'] \
+                            or chain_appearance[antibodyName] == ['Light', 'Heavy']:
+                        pairChain.append(antibodyName)
+                    elif chain_appearance[antibodyName] == ['Heavy']:
+                        onlyHeavy.append(antibodyName)
+                    elif chain_appearance[antibodyName] == ['Light']:
+                        onlyLight.append(antibodyName)
+                    elif 'Heavy2' or 'Light2' in chain_appearance[antibodyName]:
+                        multiPair.append(antibodyName)
+
+                    else:
+                        if len(chain_appearance[antibodyName]) == 2:
+                            pairWithFusion.append(antibodyName)
+                        else:
+                            multiPairWithFusion.append(antibodyName)
+
+                print('multiPair=', multiPair)
+
+            ################################################################################
+            ### Function 6
+            #
+            # 24.10.16
+            #
+            # 1.3 version By:(Echo) Ziyi Cui
+            #
+            # format_data() --> string printed out
+            # format the integrated data and put it into a file.
+            #
+            # Usage:
+            # ------
+            # integrateData.py -> stdout(print)
 
 
-    print(noSeq) #bug
-    print(chain_appearance['citatuzumab bogatox']) #bug
+            def format_data():
 
+                formatData = ''
 
-    for antibodyName in chain_appearance:
-        if chain_appearance[antibodyName] == ['Heavy', 'Light'] \
-          or chain_appearance[antibodyName] == ['Light' , 'Heavy'] :
-            pairChain.append(antibodyName)
-        elif chain_appearance[antibodyName] ==['Heavy']:
-            onlyHeavy.append(antibodyName)
-        elif chain_appearance[antibodyName] == ['Light']:
-            onlyLight.append(antibodyName)
-        elif 'Heavy2' or 'Light2' in chain_appearance[antibodyName]:
-            multiPair.append(antibodyName)
+                for key in integratedSeqInfo:
+                    if ' - no sequence' in key:
+                        formatData += '>' + key + '\n\n'
 
-        else:
-            if len(chain_appearance[antibodyName]) == 2:
-                pairWithFusion.append(antibodyName)
-            else:
-                multiPairWithFusion.append(antibodyName)
+                    else:
+                        field = key.split('|')
+                        antibodyName = field[0]
+                        chainType = field[1]
+                        correspondingH = antibodyName + '|Heavy'
+                        correspondingL = antibodyName + '|Light'
+                        correspondingH2 = antibodyName + '|Heavy2'
+                        correspondingL2 = antibodyName + '|Light2'
 
-    print('multiPair=', multiPair)
+                        if antibodyName in pairChain and chainType == 'Heavy':
+                            formatData += '>' + key + '\n' + integratedSeqInfo[key] + \
+                                          '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
 
-################################################################################
-### Function 6
-#
-# 24.10.16
-#
-# 1.3 version By:(Echo) Ziyi Cui
-#
-# format_data() --> string printed out
-# format the integrated data and put it into a file.
-#
-# Usage:
-# ------
-# integrateData.py -> stdout(print)
+                        elif antibodyName in pairWithFusion and chainType == 'Heavy':
+                            formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n'
+                            if correspondingL in integratedSeqInfo:
+                                formatData += '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
+                            else:
+                                fusedL = correspondingL + '|Fusion'
+                                formatData += '>' + fusedL + 'n' + integratedSeqInfo[fusedL] + '\n\n'
 
+                        elif (antibodyName in multiPair) and (chainType == 'Heavy'):
+                            formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n'
+                            if correspondingL in integratedSeqInfo:
+                                formatData += '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
 
-def format_data():
+                            if correspondingH2 in integratedSeqInfo:
+                                formatData += '>' + correspondingH2 + '\n' + integratedSeqInfo[correspondingH2] + '\n'
+                            else:
+                                formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n'
 
-    formatData = ''
+                            if correspondingL2 in integratedSeqInfo:
+                                formatData += '>' + correspondingL2 + '\n' + integratedSeqInfo[correspondingL2] + '\n\n'
+                            else:
+                                formatData += '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
 
-    for key in integratedSeqInfo:
-        if ' - no sequence' in key:
-            formatData += '>' + key + '\n\n'
+                        elif antibodyName in multiPairWithFusion:
+                            if chainType == 'Heavy2':
+                                formatData = '>' + correspondingH + integratedSeqInfo[correspondingH] + '\n' + \
+                                             '>' + correspondingL + integratedSeqInfo[correspondingL] + '\n\n' + \
+                                             '>' + key + '\n' + integratedSeqInfo[key] + '\n' + \
+                                             '>' + correspondingL + integratedSeqInfo[correspondingL] + '\n\n'
+                            elif chainType == 'Light2':
+                                formatData = '>' + correspondingH + integratedSeqInfo[correspondingH] + '\n' + \
+                                             '>' + correspondingL + integratedSeqInfo[correspondingL] + '\n\n' + \
+                                             '>' + correspondingH + integratedSeqInfo[correspondingH] + '\n' + \
+                                             '>' + key + '\n' + integratedSeqInfo[key] + '\n\n'
 
-        else:
-            field = key.split('|')
-            antibodyName = field[0]
-            chainType = field[1]
-            correspondingH = antibodyName + '|Heavy'
-            correspondingL = antibodyName + '|Light'
-            correspondingH2 = antibodyName + '|Heavy2'
-            correspondingL2 = antibodyName + '|Light2'
-
-            if antibodyName in pairChain and chainType == 'Heavy':
-                formatData += '>' + key + '\n' + integratedSeqInfo[key] + \
-                              '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
-
-            elif antibodyName in pairWithFusion and chainType == 'Heavy':
-                formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n'
-                if correspondingL in integratedSeqInfo:
-                    formatData += '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
-                else:
-                    fusedL = correspondingL + '|Fusion'
-                    formatData += '>' + fusedL + 'n' + integratedSeqInfo[fusedL] + '\n\n'
-
-            elif (antibodyName in multiPair) and (chainType == 'Heavy'):
-                formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n'
-                if correspondingL in integratedSeqInfo:
-                    formatData += '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
-
-                if correspondingH2 in integratedSeqInfo:
-                    formatData += '>' + correspondingH2 + '\n' + integratedSeqInfo[correspondingH2] + '\n'
-                else:
-                    formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n'
-
-                if correspondingL2 in integratedSeqInfo:
-                    formatData += '>' + correspondingL2 + '\n' + integratedSeqInfo[correspondingL2] + '\n\n'
-                else:
-                    formatData += '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
-
-            elif antibodyName in multiPairWithFusion:
-                    if chainType == 'Heavy2':
-                        formatData = '>' + correspondingH + integratedSeqInfo[correspondingH] + '\n' + \
-                                     '>' + correspondingL + integratedSeqInfo[correspondingL] + '\n\n' + \
-                                     '>' + key + '\n' + integratedSeqInfo[key] + '\n' + \
-                                     '>' + correspondingL + integratedSeqInfo[correspondingL] + '\n\n'
-                    elif chainType == 'Light2':
-                        formatData = '>' + correspondingH + integratedSeqInfo[correspondingH] + '\n' + \
-                                     '>' + correspondingL + integratedSeqInfo[correspondingL] + '\n\n' + \
-                                     '>' + correspondingH + integratedSeqInfo[correspondingH] + '\n' + \
-                                     '>' + key + '\n' + integratedSeqInfo[key] + '\n\n'
-
-            else:  # case when (antibodyName in allInOne) or (antibodyName in  onlyHeavy) or (antibodyName in onlyLight)
-                formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n\n'
-
+                        else:  # case when (antibodyName in allInOne) or (antibodyName in  onlyHeavy) or (antibodyName in onlyLight)
+                            formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n\n'
 
 
 ################################################################################
