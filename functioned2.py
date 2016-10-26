@@ -21,18 +21,13 @@ import sys
 ################################################################################
 # constant
 
+RabNoSeq = []
+RabWithSeq = []
+RseqDict = {}
 
-abNoSeq      = []
-abWithSeq    = []
-seqDict      = {}
-
-RabNoSeq     = []
-RabWithSeq   = []
-RseqDict     = {}
-
-PabNoSeq     = []
-PabWithSeq   = []
-PseqDict     = {}
+PabNoSeq = []
+PabWithSeq = []
+PseqDict = {}
 
 warningList  = []
 
@@ -40,6 +35,7 @@ integratedSeqInfo = {}
 
 SeqInfo = {}
 
+noSeq               = []
 allInOne            = []
 
 chain_appearance    = {}
@@ -91,7 +87,7 @@ def testOpen(filePath):
 # 1.2 version By:(Echo) Ziyi Cui
 #
 # add_key() --> SeqInfo = {antibodyName | Heavy/light :[]}
-#----------------------------------------------------------
+# ---------------------------------------------------------
 # extract antibodyName as the key of a new dict.
 
 
@@ -101,6 +97,12 @@ def add_key(InputFileHandle):
     abNoSeq = []
     abWithSeq = []
     seqDict = {}
+    global RabNoSeq
+    global RabWithSeq
+    global RseqDict
+    global PabNoSeq
+    global PabWithSeq
+    global PseqDict
 
     for line in antibodyData.readlines():
         if line[0] == '>' in line:
@@ -114,20 +116,23 @@ def add_key(InputFileHandle):
             else:
                 field = antibodyKey.split('|')
                 antibodyName = field[0]
-                abWithSeq.append(antibodyName)
+                if antibodyName not in abWithSeq:
+                    abWithSeq.append(antibodyName)
     if InputFileHandle   == sys.argv[1]:
-         RabNoSeq         = abNoSeq
-         RabWithSeq       = abWithSeq
-         RseqDict         = seqDict
+        RabNoSeq         = abNoSeq
+        RabWithSeq       = abWithSeq
+        RseqDict         = seqDict
+        print('1.R-No', len(RabNoSeq))
+        print('1.R-with', len(RabWithSeq))
+
     elif InputFileHandle == sys.argv[2]:
-         PabNoSeq         = abNoSeq
-         #PabWithSeq      = abWithSeq
-         #seqDict         = seqDict
-
-
+        PabNoSeq         = abNoSeq
+        PabWithSeq      = abWithSeq
+        PseqDict         = seqDict
+        print('1.P-No', len(PabNoSeq))
+        print('1.P-with', len(PabWithSeq))
 
     antibodyData.close()
-
 
 ################################################################################
 ### Function 2
@@ -140,22 +145,24 @@ def add_key(InputFileHandle):
 # ----------------------------------------------------------
 # add the corresponding sequence of antibody
 
+
 def add_seq(InputFileHandle):
         antibodyData      = open(InputFileHandle, 'r')
         isReadingSequence = False
         antibodyKey       = ''
         sequence          = ''
+        global RseqDict
+        global PseqDict
 
         for line in antibodyData.readlines():
             if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
                 isReadingSequence = False
 
-                if antibodyKey in integratedSeqInfo:
-                    if InputFileHandle == sys.argv[1]:
-                        RseqDict[antibodyKey] = sequence
-                    else:
-                        PseqDict[antibodyKey] = sequence
-                    sequence = ''
+                if InputFileHandle == sys.argv[1]:
+                    RseqDict[antibodyKey] = sequence
+                else:
+                    PseqDict[antibodyKey] = sequence
+                sequence = ''
 
             if isReadingSequence:
                 sequence += line
@@ -194,14 +201,16 @@ def add_imagedSeq(InputFileHandle):
             antibodyName = field[0]
 
             if InputFileHandle == sys.argv[3]:
-                RseqDict.setdefault(antibodyKey,'')
+                RseqDict.setdefault(antibodyKey, '')
                 RseqDict[antibodyKey] = i_sequence
 
                 if (antibodyName + ' - no sequence') in RseqDict:
                     RseqDict.pop(antibodyName + ' - no sequence')
                     RabNoSeq.remove(antibodyName)
+                    print('3.1', antibodyName)
                 if antibodyName not in RabWithSeq:
                     RabWithSeq.append(antibodyName)
+                    print('3.2', antibodyName)
             else:
                 PseqDict.setdefault(antibodyKey, '')
                 PseqDict[antibodyKey] = i_sequence
@@ -225,6 +234,10 @@ def add_imagedSeq(InputFileHandle):
                 isReadingSequence = True
                 antibodyKey       = line.replace(">", "").rstrip()
 
+    print('3.R-No', len(RabNoSeq))
+    print('3.R-with', len(RabWithSeq))
+    #print(RabWithSeq)
+
     imagedSeq.close()
 
 ################################################################################
@@ -240,6 +253,10 @@ def add_imagedSeq(InputFileHandle):
 
 def integrate_dicts():
 
+    global integratedSeqInfo
+    global warningList
+    global noSeq
+
     for antibodyKey in PseqDict:
         if antibodyKey in RseqDict:
             if RseqDict[antibodyKey] != PseqDict[antibodyKey]:
@@ -252,7 +269,7 @@ def integrate_dicts():
                 RseqDict.setdefault(antibodyKey, '')
 
         else:
-            field        = antibodyKey.split('|')
+            field = antibodyKey.split('|')
             antibodyName = field[0]
             RseqDict.setdefault(antibodyKey, PseqDict[antibodyKey])
             if antibodyName not in RabWithSeq:
@@ -260,10 +277,10 @@ def integrate_dicts():
             if (antibodyName + ' - no sequence') in RseqDict:
                 RseqDict.pop(antibodyName + ' - no sequence')
                 RabNoSeq.remove(antibodyName)
+                print(antibodyName)
 
     integratedSeqInfo = RseqDict
-    abNoSeq           = RabNoSeq
-    abWithSeq         = RabWithSeq
+    noSeq = RabNoSeq
 
     #print(integratedSeqInfo)
     #print('abWithSeq =', abWithSeq)
@@ -280,6 +297,7 @@ def integrate_dicts():
 
 def sort_seq():
 
+    global noSeq
     for key in integratedSeqInfo:
         if ' - no sequence' in key:
             pass
@@ -320,10 +338,10 @@ def sort_seq():
             else:
                 multiPairWithFusion.setdefault(antibodyName, chain_appearance[antibodyName])
 
-    print('abnoSeq = ', abNoSeq)
-    print('multiPair=', multiPair)
-    print('pairWithFusion=',pairWithFusion)
-    print('multiPairWithFusion',multiPairWithFusion)
+    #print('abnoSeq = ', abNoSeq)
+    #print('multiPair=', multiPair)
+    #print('pairWithFusion=',pairWithFusion)
+    #print('multiPairWithFusion',multiPairWithFusion)
 
 ################################################################################
 ### Function 6
@@ -414,13 +432,13 @@ testOpen(sys.argv[4])
 add_key(sys.argv[1])
 add_seq(sys.argv[1])
 add_imagedSeq(sys.argv[3])
-add_key(sys.argv[2])
-add_seq(sys.argv[2])
-add_imagedSeq(sys.argv[4])
-integrate_dicts()
-sort_seq()
-format_data()
-print(formatData)
+#add_key(sys.argv[2])
+#add_seq(sys.argv[2])
+#add_imagedSeq(sys.argv[4])
+#integrate_dicts()
+#sort_seq()
+#format_data()
+#print(formatData)
 
 
 
