@@ -3,501 +3,456 @@
 #
 # program: integrateData.py
 # Author:  (Echo) Ziyi Cui
-# version: Version 1.4
-# Date:    19/10/2016
+# version: Version 1.7
+# Date:    26/10/2016
 #
 # Function:
 # ---------
-# 1.From the file with antibody sequence, collect the appearance of heavy chain,
-# light chain, or Fused chain.
-# 2.Then sort them to different groups according to this appearance.
-# 3.Extract sequence data from RL and add them to a new dict: antibodyName as key; sequence as value
-# 4.add those antibodies that are only in PL.faa
-# 5.add sequences manually converted from images.
-# 6.write the final integrated results in to a file.
+#.
 #
 # Usage:
 # ------
 # integrateData.py + RL.faa -> integratedData.txt
 #
 ################################################################################
-import json
+# import
 import sys
 
 ################################################################################
-# constant about RL.faa
+# constant
 
-dict_recommended_appearance = {}
-R_antibodyWithASetOfChain   = []
-R_heavyChainAntibody        = []
-R_lightChainAntibody        = []
-R_twoVersionAntibody        = []
-R_antibodyWithFusion        = []
-R_specialAntibody           = {}
+RabNoSeq = []
+RabWithSeq = []
+RseqDict = {}
+
+PabNoSeq = []
+PabWithSeq = []
+PseqDict = {}
+
+warningList  = []
 
 integratedSeqInfo = {}
+abWithSeq = []
 
-currentSequence = ""
+SeqInfo = {}
 
-# constant about RL.faa
-p_sequence                = ""
-warningList               = []
-antibodyInPLOnly          = []
+noSeq               = []
+allInOne            = []
 
-antibodyWithASetOfChain   = []
-heavyChainAntibody        = []
-lightChainAntibody        = []
-twoVersionAntibody        = []
-antibodyTwoChainInOne     = []
-antibodyWithFusion        = {}
-specialAntibody           = {}
-i = 0
+chain_appearance    = {}
+pairChain           = []
+onlyHeavy           = []
+onlyLight           = []
+multiPair           = {}
+pairWithFusion      = {}
+multiPairWithFusion = {}
 
-# constant about RLandPL115imagedSeq.faa
-i_sequence                = ""
-seqImagedOnly             = []
+formatData = ''
+################################################################################
+# UsageDie()
+# ----------
+# provide general information about the whole process.
+#
+# 20.10.16 Original version By: Echo
+def UsageDie():
+
+    print("""
+    version:   1.5
+    Usage:     integrateData.py + RL.faa + PL.faa + RLimagedSeq.faa +
+    PL115imagedSeq.faa-> integratedData.txt
+    Function:  integrate antibody sequence data from Proposed list(PL.faa and PL115
+    imagedSeq.faa) and Recommended list(RL.faa and RLimagedSeq.faa).
+    Date:      20.10.2016""")
+    sys.exit()
 
 ################################################################################
-### main program 1
+# testOpen()
+# ---------
+# test whether the file can be opened
 #
-# 12.10.16
+# 20.10.16 Original version By: Echo
+
+def testOpen(filePath):
+    try:
+        open(filePath, "r")
+    except:
+        print("Unable to open file " + filepPth)
+        sys.exit()
+    return 1
+
+################################################################################
+### Function 1
 #
-# 1.1 version By:(Echo) Ziyi Cui
+# 26.10.16
 #
-# obtain all antibodyName in RL.faa and collect the information of their
-# heavy/light chain appearance.
-# Then sort them according to this appearance.
+# 1.2 version By:(Echo) Ziyi Cui
 #
-# Usage:
-# ------
-# integrateData.py + RL.faa -> stdout(print)
+# add_key() --> SeqInfo = {antibodyName | Heavy/light :[]}
+# ---------------------------------------------------------
+# extract antibodyName as the key of a new dict.
 
 
-# add chain appearance info to each antibody.
+def add_key(InputFileHandle):
 
-def ObtainAntibodyInRecomended(filePath):
-    recommended  = open(filePath, "r")
-    for line in recommended.readlines():
+    antibodyData = open(InputFileHandle, "r")
+    abNoSeq = []
+    abWithSeq = []
+    seqDict = {}
+    global RabNoSeq
+    global RabWithSeq
+    global RseqDict
+    global PabNoSeq
+    global PabWithSeq
+    global PseqDict
+
+    for line in antibodyData.readlines():
         if line[0] == ">":
-            line   = line.replace(">", "")  # delete the ">"
-            line   = line.rstrip()
+            antibodyKey = line.replace('>', '').rstrip()
+            seqDict.setdefault(antibodyKey, '')
 
-        if "|" in line:
-            field         = line.split("|")
-            antibodyName  = field[0]
-            chainType     = field[-1]
-            dict_recommended_appearance.setdefault(antibodyName, [])
+            if '- no sequence' in antibodyKey:
+                field = antibodyKey.split(' - ')
+                antibodyName = field[0]
+                abNoSeq.append(antibodyName)
+            else:
+                field = antibodyKey.split('|')
+                antibodyName = field[0]
+                if antibodyName not in abWithSeq:
+                    abWithSeq.append(antibodyName)
+    if InputFileHandle   == sys.argv[1]:
+        RabNoSeq         = abNoSeq
+        RabWithSeq       = abWithSeq
+        RseqDict         = seqDict
+        print('1.R-No', len(RabNoSeq))
+        print('1.R-with', len(RabWithSeq))
 
-            if chainType   == "Heavy":
-                dict_recommended_appearance[antibodyName].append('H')
+    elif InputFileHandle == sys.argv[2]:
+        PabNoSeq         = abNoSeq
+        PabWithSeq      = abWithSeq
+        PseqDict         = seqDict
+        print('1.P-No', len(PabNoSeq))
+        print('1.P-with', len(PabWithSeq))
 
-            elif chainType == "Heavy2":
-                dict_recommended_appearance[antibodyName].append('H2')
-
-            elif chainType == "Light":
-                dict_recommended_appearance[antibodyName].append('L')
-
-            elif chainType == "Light2":
-                dict_recommended_appearance[antibodyName].append('L2')
-
-            elif chainType == "Fusion":
-                dict_recommended_appearance[antibodyName].append('F')
-
-
-
-   #  print('dict = ', dict_recommended_appearance)
-
-
-    # sort these antibodyNames into different groups, according to their chain appearance.
-    for antibodyName in dict_recommended_appearance:
-        if dict_recommended_appearance[antibodyName]   == ['H', 'L']:
-            R_antibodyWithASetOfChain.append(antibodyName)
-        elif dict_recommended_appearance[antibodyName] == ['H']:
-            R_heavyChainAntibody.append(antibodyName)
-        elif dict_recommended_appearance[antibodyName] == ['L']:
-            R_lightChainAntibody.append(antibodyName)
-        elif 'H2' in dict_recommended_appearance[antibodyName] or 'L2' in dict_recommended_appearance[antibodyName]:
-            R_twoVersionAntibody.append(antibodyName)
-        elif 'F' in dict_recommended_appearance[antibodyName]:
-            R_antibodyWithFusion.append(antibodyName)
-        else:
-            value = dict_recommended_appearance[antibodyName]
-            R_specialAntibody.setdefault(antibodyName, value)
-
-   #  print("program 1 results: ")
-   #  print("R_antibodyWithASetOfChain=", R_antibodyWithASetOfChain)
-   #  print(len(R_antibodyWithASetOfChain))
-   #  print("R_heavyChainAntibody =", R_heavyChainAntibody)
-   #  print(len(R_heavyChainAntibody))
-   #  print("R_lightChainAntibody =", R_lightChainAntibody)
-   #  print(len(R_lightChainAntibody))
-   #  print("R_twoVersionAntibody=", R_twoVersionAntibody)
-   #  print(len(R_twoVersionAntibody))
-   #  print("R_antibodyWithFusion=", R_antibodyWithFusion)
-   #  print(len(R_antibodyWithASetOfChain))
-   #  print("R_specialAntibody =", R_specialAntibody)
-   #  print(len(R_specialAntibody))
-   # print('\n')
-
-
-ObtainAntibodyInRecomended("inndata\\RL.faa")
-
+    antibodyData.close()
 
 ################################################################################
-### main program 2
+### Function 2
 #
-# 12.10.16
+# 26.10.16
 #
-# 1.0 version By:(Echo) Ziyi Cui
+# 1.2 version By:(Echo) Ziyi Cui
 #
-# integratedSeqInfo = {antibodyName | Heavy/light :[]}
-# build a new dictionary named as integratedSeqInfo, use the antibodyName as the
-# key.
-#
-# Usage:
-# ------
-# integrateData.py + RL.faa -> stdout(print)
+# SeqInfo = {antibodyName | Heavy/light :[sequence]}
+# ----------------------------------------------------------
+# add the corresponding sequence of antibody
 
 
-recommended       = open(r'inndata\RL.faa', 'r')
+def add_seq(InputFileHandle):
+        antibodyData      = open(InputFileHandle, 'r')
+        isReadingSequence = False
+        antibodyKey       = ''
+        sequence          = ''
+        global RseqDict
+        global PseqDict
 
-for line in recommended.readlines():
-    if line[0]    == ">" and "|" in line:
-        line      = line.replace(">", "")  # delete the ">"
-        line      = line.rstrip()
+        for line in antibodyData.readlines():
 
-        integratedSeqInfo.setdefault(line, "")
+            if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
+                isReadingSequence = False
 
+                if InputFileHandle == sys.argv[1]:
+                    RseqDict[antibodyKey] = sequence
+                else:
+                    PseqDict[antibodyKey] = sequence
+                sequence = ''
 
-print('program 2 result: ')
-print(integratedSeqInfo)
-print(len(integratedSeqInfo))
-print('\n')
-recommended.close()
+            if isReadingSequence:
+                sequence += line
+
+            if line[0] == '>':
+                if '- no sequence' in line:
+                    isReadingSequence = False
+                    continue
+                else:
+                    isReadingSequence = True
+                    antibodyKey = line.replace('>', '').rstrip()
+
+        antibodyData.close()
 
 ################################################################################
-### main program 3
+### Function 3
 #
-# 13.10.16
+# 26.10.16
 #
-# 1.1 version By:(Echo) Ziyi Cui
+# 1.3 version By:(Echo) Ziyi Cui
+#
+# add those sequences that manually converted from the images to integratedSeqInfo
+#
+
+def add_imagedSeq(InputFileHandle):
+
+    imagedSeq       = open(InputFileHandle, 'r')
+    isReadingSequence = False
+    i_sequence        = ''
+
+    for line in imagedSeq.readlines():
+
+        if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
+            isReadingSequence = False
+            field = antibodyKey.split('|')
+            antibodyName = field[0]
+
+            if InputFileHandle == sys.argv[3]:
+                RseqDict.setdefault(antibodyKey, '')
+                RseqDict[antibodyKey] = i_sequence
+
+                if (antibodyName + ' - no sequence') in RseqDict:
+                    RseqDict.pop(antibodyName + ' - no sequence')
+                    RabNoSeq.remove(antibodyName)
+                if antibodyName not in RabWithSeq:
+                    RabWithSeq.append(antibodyName)
+
+            elif InputFileHandle == sys.argv[4]:
+                PseqDict.setdefault(antibodyKey, '')
+                PseqDict[antibodyKey] = i_sequence
+
+                if (antibodyName + ' - no sequence') in PseqDict:
+                    PseqDict.pop(antibodyName + ' - no sequence')
+                    PabNoSeq.remove(antibodyName)
+                if antibodyName not in PabWithSeq:
+                    PabWithSeq.append(antibodyName)
+
+
+            i_sequence = ''
+
+        if isReadingSequence:
+                i_sequence += line
+
+        if line[0] == ">":
+            if "- no sequence" in line:
+                isReadingSequence = False
+                continue
+            else:
+                isReadingSequence = True
+                antibodyKey       = line.replace(">", "").rstrip()
+
+    print('3.R-No', len(RabNoSeq))
+    print('3.R-with', len(RabWithSeq))
+    #print(PseqDict)
+
+    imagedSeq.close()
+
+################################################################################
+### Function 4
+#
+# 26.10.16
+#
+# 1.3 version By:(Echo) Ziyi Cui
 #
 # integratedSeqInfo = {antibodyName | Heavy/light :[sequence]}
-# add the corresponding sequence of antibody from list 'R_antibodyWithASetOfChain'
-# as the value of dict 'integratedSeqInfo'.
-# Usage:
-# ------
-# integrateData.py + RL.faa -> stdout(print)
+# add the corresponding sequence of antibody
 
-recommended       = open(r'inndata\RL.faa', 'r')
-isReadingSequence = False
 
-for line in recommended.readlines():
-    if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
-        isReadingSequence         = False
+def integrate_dicts():
 
-        if antibodyName in integratedSeqInfo:
+    global integratedSeqInfo
+    global warningList
+    global noSeq
+    global abWithSeq
 
-            integratedSeqInfo[antibodyName] += currentSequence
+    for antibodyKey in PseqDict:
+        if antibodyKey in RseqDict:
+            if RseqDict[antibodyKey] != PseqDict[antibodyKey]:
+                warningList.append(antibodyKey)
 
-        currentSequence       = ""
+        elif ' - no sequence' in antibodyKey:
+            field = antibodyKey.split(' - ')
+            antibodyName = field[0]
+            if antibodyName not in RabWithSeq:
+                RseqDict.setdefault(antibodyKey, '')
 
-    if isReadingSequence:
-        currentSequence      += line
-
-    if line[0] == ">":
-        if "-" in line:
-            isReadingSequence = False
-            continue
         else:
-            isReadingSequence = True
-            line              = line.replace(">", "")
-            line              = line.rstrip()
-            antibodyName      = line
+            field = antibodyKey.split('|')
+            antibodyName = field[0]
+            RseqDict.setdefault(antibodyKey, PseqDict[antibodyKey])
+            if antibodyName not in RabWithSeq:
+                RabWithSeq.append(antibodyName)
+            if (antibodyName + ' - no sequence') in RseqDict:
+                RseqDict.pop(antibodyName + ' - no sequence')
+                RabNoSeq.remove(antibodyName)
+                print(antibodyName)
 
+    integratedSeqInfo = RseqDict
+    abWithSeq = RabWithSeq
+    noSeq = RabNoSeq
 
-print('program 3 result: ')
-print("integratedSeqInfo=", integratedSeqInfo)
-print(len(integratedSeqInfo))
-print('\n')
-
-recommended.close()
+    print('4.warning List', warningList)
+    #print(integratedSeqInfo)
+    print('4.abWithSeq =', len(abWithSeq))
+    #print('4.integratedSeqInfo=',integratedSeqInfo)
 
 ################################################################################
-### main program 4
+### Function 5
 #
-# 13.10.16
+# 26.10.16
 #
-# 1.1 version By:(Echo) Ziyi Cui
+# 1.3 version By:(Echo) Ziyi Cui
 #
-# check the PL.daa with integratedseqInfo.
-# 1.For the same antibody, if the sequence is different between the PL.faa and
-# integratedInfo constructed from RL.faa, then print a warning message and retain
-# the sequence in integratedseqInfo.
-# 2.If antibody from PL.faa is not already in integratedseqInfo, then add its info
-# into integratedseqInfo.
-# 3.If antibody from PL.faa is is in integratedseqInfo and the sequences from two
-# source are the same, then pass.
-#
-# Usage:
-# ------
-# integrateData.py + PL.faa -> stdout(print)
+# sort integratedSeqInfo according to chainType
 
-proposed          = open(r'inndata\PL.faa', "r")
-isReadingSequence = False
 
-for line in proposed.readlines():
+def sort_seq():
 
-    if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
-        isReadingSequence = False
+    global chain_appearance
 
-        if antibodyName in integratedSeqInfo:
-            if integratedSeqInfo[antibodyName] == p_sequence:
-                pass
-
-            else:
-                if antibodyName in warningList:
-                    pass
-
-                else:
-                    warningList.append(antibodyName)
-
-        elif antibodyName == 'otlertuzumab|Heavy':
+    for key in integratedSeqInfo:
+        if ' - no sequence' in key:
             pass
+        elif ('-' in key) and ('|' in key):
+            field = key.split('|')
+            allInOne.append(field[0])
 
         else:
-            integratedSeqInfo.setdefault(antibodyName, None)
-            integratedSeqInfo[antibodyName] = p_sequence
-            antibodyInPLOnly.append(antibodyName)
+            field = key.split('|')
+            antibodyName = field[0]
+            if len(field) == 2:
+                chainType = field[-1]
+                chain_appearance.setdefault(antibodyName, [])
+                chain_appearance[antibodyName].append(chainType)
+            else:  # case when len(field) = 3
+                chainType = field[1] + field[2]
+                chain_appearance.setdefault(antibodyName, [])
+                chain_appearance[antibodyName].append(chainType)
 
-        p_sequence            = ""
 
-    if isReadingSequence:
-            p_sequence       += line
+    print(chain_appearance['citatuzumab bogatox']) #bug
 
-    if line[0] == ">":
-        if "-" in line:
-            isReadingSequence = False
-            continue
+
+    for antibodyName in chain_appearance:
+        if chain_appearance[antibodyName] == ['Heavy', 'Light'] \
+          or chain_appearance[antibodyName] == ['Light', 'Heavy']:
+            pairChain.append(antibodyName)
+        elif chain_appearance[antibodyName] ==['Heavy']:
+            onlyHeavy.append(antibodyName)
+        elif chain_appearance[antibodyName] == ['Light']:
+            onlyLight.append(antibodyName)
+        elif ('Heavy2' in chain_appearance[antibodyName]) or ('Light2' in chain_appearance[antibodyName]):
+            multiPair.setdefault(antibodyName, chain_appearance[antibodyName])
+
         else:
-            isReadingSequence = True
-            line              = line.replace(">", "")
-            line              = line.rstrip()
-            antibodyName      = line
+            if len(chain_appearance[antibodyName]) == 2:
+                pairWithFusion.setdefault(antibodyName, chain_appearance[antibodyName])
+            else:
+                multiPairWithFusion.setdefault(antibodyName, chain_appearance[antibodyName])
 
-print("main program 4 result:")
-#print("integratedSeqInfo=", integratedSeqInfo)
-print(len(integratedSeqInfo))
-print("warningList=", warningList)
-print(len(warningList))
-print("antibodyInPLOnly=", antibodyInPLOnly)
-print(len(antibodyInPLOnly))
-print("\n")
-
-proposed.close()
+    print('noSeq = ', noSeq)
+    print('5.multiPair=', multiPair)
+    print('5.pairWithFusion=',pairWithFusion)
+    print('5.multiPairWithFusion=',multiPairWithFusion)
+    print('5.onlyHeavy=', onlyHeavy)
+    print('5.onlyLight=', onlyLight)
 
 ################################################################################
-### main program 5
+### Function 6
 #
-# 19.10.16
+# 26.10.16
 #
-# 1.0 version By:(Echo) Ziyi Cui
+# 1.4 version By:(Echo) Ziyi Cui
 #
-# add those imagedseq to the integratedData
-#
-# Usage:
-# ------
-# R_sortAntibody.py + RLandPL115imagedSeq.faa -> stdout(print)
-
-imagedSeq         = open(r'checkabnoseq\RLandPL115imagedSeq.faa', "r")
-isReadingSequence = False
-
-for line in imagedSeq.readlines():
-
-    if (line[0] == '>' or line[0] == '\n') and isReadingSequence:
-        isReadingSequence = False
-
-        integratedSeqInfo.setdefault(antibodyName, None)
-        integratedSeqInfo[antibodyName] = i_sequence
-        seqImagedOnly.append(antibodyName)
-        i_sequence = ""
-
-    if isReadingSequence:
-            i_sequence += line
-
-    if line[0] == ">":
-        if "-" in line:
-            isReadingSequence = False
-            continue
-        else:
-            isReadingSequence = True
-            line              = line.replace(">", "")
-            line              = line.rstrip()
-            antibodyName      = line
-
-print("main program 5 result:")
-print("integratedSeqInfo=", integratedSeqInfo)
-print(len(integratedSeqInfo))
-print("seqImagedOnly=", seqImagedOnly)
-print(len(seqImagedOnly))
-print("\n")
-
-imagedSeq.close()
-
-################################################################################
-### main program 6
-#
-# 19.10.16
-#
-# 1.1 version By:(Echo) Ziyi Cui
-#
-# classify integrateDataInfo.
-#
-# Usage:
-# ------
-# integrateData.py -> integratedData.txt
-
-dict_integratedSeqInfo_appearance = {}
-
-for key in integratedSeqInfo:
-    field = key.split("|")
-    antibodyName = field[0]
-    chainType = field[-1]
-    dict_integratedSeqInfo_appearance.setdefault(antibodyName, [])
-
-    if chainType   == "Heavy":
-        dict_integratedSeqInfo_appearance[antibodyName].append('H')
-
-    elif chainType == "Heavy2":
-        dict_integratedSeqInfo_appearance[antibodyName].append('H2')
-
-    elif chainType == "Light":
-        dict_integratedSeqInfo_appearance[antibodyName].append('L')
-
-    elif chainType == "Light2":
-        dict_integratedSeqInfo_appearance[antibodyName].append('L2')
-
-    elif chainType == "Fusion":
-        chainType = field[1] + 'F'
-        dict_integratedSeqInfo_appearance[antibodyName].append(chainType)
-
-    else:
-        print(key)
-        dict_integratedSeqInfo_appearance[antibodyName].append('H&L')
-
-#print('dict_integratedSeqInfo_appearance = ', dict_integratedSeqInfo_appearance)
-
-
-# sort these antibodyNames into different groups, according to their chain appearance.
-for antibodyName in dict_integratedSeqInfo_appearance:
-    if (dict_integratedSeqInfo_appearance[antibodyName]   == ['H', 'L']) \
-    or (dict_integratedSeqInfo_appearance[antibodyName]   == ['L', 'H']):
-        antibodyWithASetOfChain.append(antibodyName)
-
-    elif dict_integratedSeqInfo_appearance[antibodyName] == ['H']:
-        heavyChainAntibody.append(antibodyName)
-
-    elif dict_integratedSeqInfo_appearance[antibodyName] == ['L']:
-        lightChainAntibody.append(antibodyName)
-
-    elif dict_integratedSeqInfo_appearance[antibodyName] == ['H&L']:
-        antibodyTwoChainInOne.append(antibodyName)
-
-    else:
-        value = dict_integratedSeqInfo_appearance[antibodyName]
-        specialAntibody.setdefault(antibodyName, value)
-
-print("program 6 results: ")
-print("antibodyWithASetOfChain=", antibodyWithASetOfChain)
-print(len(antibodyWithASetOfChain))
-print("heavyChainAntibody =", heavyChainAntibody)
-print(len(heavyChainAntibody))
-print("lightChainAntibody =", lightChainAntibody)
-print(len(lightChainAntibody))
-print("twoVersionAntibody=", twoVersionAntibody)
-print(len(twoVersionAntibody))
-print("antibodyTwoChainInOne=", twoVersionAntibody)
-print(len(antibodyTwoChainInOne))
-print("specialAntibody =", specialAntibody)
-print(len(specialAntibody))
-print('\n')
-
-################################################################################
-### main program 7
-#
-# 19.10.16
-#
-# 1.1 version By:(Echo) Ziyi Cui
-#
+# format_data() --> string printed out
 # format the integrated data and put it into a file.
 #
 # Usage:
 # ------
-# R_sortAntibody.py + PL.faa -> integratedData.txt
+# integrateData.py -> stdout(print)
 
-formatData = ""
 
-for key in integratedSeqInfo:
-    field              = key.split("|")
-    if len(field)      == 1:
-        antibodyName   = field[0]
+def format_data():
 
-    else:
-        antibodyName   = field[0]
-        chainType      = field[1]
-        appearance     = dict_integratedSeqInfo_appearance[antibodyName]
+    global formatData
 
-    if (antibodyName in antibodyWithASetOfChain) and chainType == 'Heavy':
-        formatData     += ">" + key + '\n' + integratedSeqInfo[key]
-        correspondingL  = antibodyName + '|Light'
-        formatData     += ">" + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
+    for key in integratedSeqInfo:
+        if ' - no sequence' in key:
+            formatData += '>' + key + '\n\n'
 
-    #The followings are four special cases for antibodies in specialAntibody from program 5 result
-    elif (antibodyName in heavyChainAntibody) or(antibodyName in lightChainAntibody) \
-    or (antibodyName in antibodyTwoChainInOne):
-        formatData     += ">" + key + "\n" + integratedSeqInfo[key] + '\n\n'
+        else:
+            field = key.split('|')
+            antibodyName = field[0]
+            chainType = field[1]
+            correspondingH = antibodyName + '|Heavy'
+            correspondingL = antibodyName + '|Light'
+            correspondingH2 = antibodyName + '|Heavy2'
+            correspondingL2 = antibodyName + '|Light2'
 
-    elif ('H' in appearance) and ('LightF' in appearance) and chainType == 'Heavy':
-        formatData     += ">" + key + '\n' + integratedSeqInfo[key]
-        correspondingL  = antibodyName + '|Light|Fusion'
-        formatData     += ">" + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
+            if antibodyName in pairChain and chainType == 'Heavy':
+                formatData += '>' + key + '\n' + integratedSeqInfo[key] + \
+                              '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
 
-    elif ('H' in appearance) and ('L' in appearance) and ('Heavy2F' in appearance) and chainType == 'Heavy':
-        formatData     += ">" + key + '\n' + integratedSeqInfo[key]
-        correspondingL  = antibodyName + '|Light'
-        formatData     += ">" + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
+            elif antibodyName in pairWithFusion and chainType == 'Heavy':
+                formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n'
+                if correspondingL in integratedSeqInfo:
+                    formatData += '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
+                else:
+                    fusedL = correspondingL + '|Fusion'
+                    formatData += '>' + fusedL + '\n' + integratedSeqInfo[fusedL] + '\n\n'
 
-        correspondingH2 = antibodyName + '|Heavy2|Fusion'
-        formatData     += ">" + correspondingH2 + '\n' + integratedSeqInfo[correspondingH2] \
-                        + ">" + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
+            elif (antibodyName in multiPair) and (chainType == 'Heavy'):
+                formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n'
+                if correspondingL in integratedSeqInfo:
+                    formatData += '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
 
-    elif ('H' in appearance) and ('H2' in appearance) and ('L' in appearance)  and chainType == 'Heavy':
-        formatData     += ">" + key + '\n' + integratedSeqInfo[key]
-        correspondingL  = antibodyName + '|Light'
-        formatData     += ">" + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
+                if correspondingH2 in integratedSeqInfo:
+                    formatData += '>' + correspondingH2 + '\n' + integratedSeqInfo[correspondingH2] + '\n'
+                else:
+                    formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n'
 
-        correspondingH2 = antibodyName + '|Heavy2'
-        formatData     += ">" + correspondingH2 + '\n' + integratedSeqInfo[correspondingH2] \
-                        + ">" + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
+                if correspondingL2 in integratedSeqInfo:
+                    formatData += '>' + correspondingL2 + '\n' + integratedSeqInfo[correspondingL2] + '\n\n'
+                else:
+                    formatData += '>' + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
 
-    elif ('H' in appearance) and ('H2' in appearance) and ('L' in appearance) and ('L2' in appearance) and chainType == 'Heavy':
-        formatData     += ">" + key + '\n' + integratedSeqInfo[key]
-        correspondingL  = antibodyName + '|Light'
-        formatData += ">" + correspondingL + '\n' + integratedSeqInfo[correspondingL] + '\n\n'
+            elif antibodyName in multiPairWithFusion:
+                    if chainType == 'Heavy2':
+                        formatData = '>' + correspondingH + integratedSeqInfo[correspondingH] + '\n' + \
+                                     '>' + correspondingL + integratedSeqInfo[correspondingL] + '\n\n' + \
+                                     '>' + key + '\n' + integratedSeqInfo[key] + '\n' + \
+                                     '>' + correspondingL + integratedSeqInfo[correspondingL] + '\n\n'
+                    elif chainType == 'Light2':
+                        formatData = '>' + correspondingH + integratedSeqInfo[correspondingH] + '\n' + \
+                                     '>' + correspondingL + integratedSeqInfo[correspondingL] + '\n\n' + \
+                                     '>' + correspondingH + integratedSeqInfo[correspondingH] + '\n' + \
+                                     '>' + key + '\n' + integratedSeqInfo[key] + '\n\n'
 
-        correspondingH2 = antibodyName + '|Heavy2'
-        correspondingL2 = antibodyName + '|Light2'
-        formatData     += ">" + correspondingH2 + '\n' + integratedSeqInfo[correspondingH2] \
-                        + ">" + correspondingL2 + '\n' + integratedSeqInfo[correspondingL2] + '\n\n'
+            else:  # case when (antibodyName in allInOne) or (antibodyName in  onlyHeavy) or (antibodyName in onlyLight)
+                formatData += '>' + key + '\n' + integratedSeqInfo[key] + '\n\n'
 
-#print('program 7 result: ')
-#print(formatData)
-#print('\n')
+################################################################################
+### main program
+#
+# 26.10.16 Original version By: Echo
+#
+# Check the command line for '-h' (help)
+if sys.argv[-1] == "-h":
+    UsageDie()
 
-savedStdout = sys.stdout
-with open('integratedData.txt', 'w+') as file:
-    sys.stdout = file
-    print(formatData)
-sys.stdout     = savedStdout
+testOpen(sys.argv[1])
+testOpen(sys.argv[2])
+testOpen(sys.argv[3])
+testOpen(sys.argv[4])
+
+add_key(sys.argv[1])
+add_seq(sys.argv[1])
+add_imagedSeq(sys.argv[3])
+add_key(sys.argv[2])
+add_seq(sys.argv[2])
+add_imagedSeq(sys.argv[4])
+integrate_dicts()
+sort_seq()
+format_data()
+print(formatData)
+
+
+
+
 
 
